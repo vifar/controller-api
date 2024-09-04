@@ -1,11 +1,11 @@
 import jwt from "jsonwebtoken";
-import { User } from "../db/entity/User";
+import { prisma } from "..";
 
 export async function userLogin(
   userId: string,
   password: string
 ): Promise<string> {
-  const validUser = await User.findOne({
+  const validUser = await prisma.user.findFirst({
     where: { userId: userId, password: password },
   });
 

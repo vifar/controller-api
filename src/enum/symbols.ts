@@ -1,14 +1,17 @@
-export enum Symbols {
+export enum SYMBOLS {
   AUDJPY = "AUDJPY",
   CADJPY = "CADJPY",
   CHFJPY = "CHFJPY",
   EURJPY = "EURJPY",
   GBPJPY = "GBPJPY",
   NZDJPY = "NZDJPY",
+
   AUDUSD = "AUDUSD",
   EURUSD = "EURUSD",
   GBPUSD = "GBPUSD",
   NZDUSD = "NZDUSD",
   USDCAD = "USDCAD",
   USDCHF = "USDCHF",
+
+  XAUUSD = "XAUUSD",
 }

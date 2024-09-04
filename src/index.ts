@@ -1,20 +1,20 @@
+import { PrismaClient } from "@prisma/client";
 import { CronJob } from "cron";
 import express from "express";
 import { getSymbolList } from "./controller/SymbolController";
 import { login } from "./controller/UserController";
-import { SequelizeInstance } from "./db/sequelize";
 
 const job = new CronJob(
   "0 11 * * 1-5",
   function () {
     // await Controller.update(
-    //     { mode: 2, status: 0 },
-    //     {
-    //       where: {
-    //         [Op.or]: [{ mode: 1 }, { mode: 0 }],
-    //       },
-    //     }
-    //   );
+    //   { mode: 2, status: 0 },
+    //   {
+    //     where: {
+    //       [Op.or]: [{ mode: 1 }, { mode: 0 }],
+    //     },
+    //   }
+    // );
     // TODO turn all symbols to off
   },
   null,
@@ -22,16 +22,33 @@ const job = new CronJob(
   "America/New_York"
 );
 
-export const seqInstance = new SequelizeInstance().GetInstance();
-
 const router = express();
+export const prisma = new PrismaClient();
 
-router.use(express.json());
-router.use(express.urlencoded({ extended: false }));
+async function main() {
+  await prisma.$connect();
 
-router.get("/list", getSymbolList);
+  router.use(express.json());
+  router.use(express.urlencoded({ extended: false }));
 
-router.post("/login", login);
+  router.get("/list", getSymbolList);
+
+  router.post("/login", login);
+
+  router.listen(process.env.PORT, async () => {
+    console.log("\nListening on port: " + process.env.PORT);
+  });
+}
+
+main()
+  .then(async () => {
+    await prisma.$disconnect();
+  })
+  .catch(async (e) => {
+    console.error(e);
+    await prisma.$disconnect();
+    process.exit(1);
+  });
 
 // router.get(
 //   "/getByUser",
@@ -48,9 +65,10 @@ router.post("/login", login);
 //       where: {
 //         userId: userId,
 //       },
-//     }).catch((err) => {
-//       res.status(400).send(err);
-//     });
+//     })
+//     // .catch((err) => {
+//     //   res.status(400).send(err);
+//     // });
 
 //     if (!rows) {
 //       return res.status(202).send({ errors: [{ msg: "Not Found" }] });
@@ -59,18 +77,18 @@ router.post("/login", login);
 //       return res.status(202).send({ errors: [{ msg: "No Records Found" }] });
 //     }
 
-//     rows.sort((a, b) => {
-//       let fa = a.symbol.toLowerCase(),
-//         fb = b.symbol.toLowerCase();
+//     // rows.sort((a, b) => {
+//     //   let fa = a.symbol.toLowerCase(),
+//     //     fb = b.symbol.toLowerCase();
 
-//       if (fa < fb) {
-//         return -1;
-//       }
-//       if (fa > fb) {
-//         return 1;
-//       }
-//       return 0;
-//     });
+//     //   if (fa < fb) {
+//     //     return -1;
+//     //   }
+//     //   if (fa > fb) {
+//     //     return 1;
+//     //   }
+//     //   return 0;
+//     // });
 
 //     return res.status(200).send({ controller: rows });
 //   }
@@ -272,8 +290,3 @@ router.post("/login", login);
 //     return res.status(200).send({ msg: true });
 //   }
 // );
-
-router.listen(process.env.PORT || 3000, async () => {
-  const port = process.env.PORT != undefined ? process.env.PORT : 3000;
-  console.log("\nListening on port: " + port);
-});
