@@ -154,8 +154,6 @@ export const update = async (req: Request, res: Response) => {
       });
   }
 
-  console.log("Record updated.");
-
   return res.status(200).send({ msg: "Update Successful" });
 };
 

@@ -12,7 +12,7 @@ export const login = async (req: Request, res: Response) => {
   }
 
   const { userId, password } = req.body;
-  console.log(userId, password);
+
   try {
     const jwtToken = await userLogin(userId, password);
     res.status(200).send({ msg: "Login Successful", token: jwtToken });

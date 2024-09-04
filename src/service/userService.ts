@@ -13,8 +13,6 @@ export async function userLogin(
     throw new Error("Invalid, please try again.");
   }
 
-  console.log("Found User: ", validUser?.userId);
-
   const jwtToken = jwt.sign(
     { id: validUser?.id, email: validUser?.email },
     `${process.env.JWT_TOKEN}`,
