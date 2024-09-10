@@ -7,7 +7,6 @@ import {
   getByUserIdAndSymbol,
   getList,
   insertSymbols,
-  restartModeJob,
   update,
 } from "./controller/SymbolController";
 import { generateKey, login, validate } from "./controller/UserController";
@@ -57,8 +56,6 @@ async function main() {
   server.listen(process.env.PORT, async () => {
     console.log("Listening on port: " + process.env.PORT);
   });
-
-  restartModeJob.start();
 }
 
 main()

@@ -1,4 +1,3 @@
-import { CronJob } from "cron";
 import { Request, Response } from "express";
 import { validationResult } from "express-validator";
 import { prisma } from "..";
@@ -186,22 +185,3 @@ export const insertSymbols = async (req: Request, res: Response) => {
 
   return res.status(200).send({ msg: "Insert Successful" });
 };
-
-export const restartModeJob = new CronJob(
-  "0 11 * * 1-5",
-  async function () {
-    await prisma.symbolStatus.updateMany({
-      where: {
-        tradeType: "day",
-      },
-      data: {
-        status: "0",
-        mode: "0",
-        tradeType: "day",
-      },
-    });
-  },
-  null,
-  true,
-  "America/New_York"
-);
