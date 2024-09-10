@@ -25,12 +25,16 @@ export const getByUserId = async (req: Request, res: Response) => {
   const statuses = await prisma.symbolStatus
     .findMany({
       where: {
-        userId: {
-          equals: userId as string,
-        },
-        tradeType: {
-          equals: type as string,
-        },
+        AND: [
+          {
+            userId: {
+              equals: userId as string,
+            },
+            tradeType: {
+              equals: type as string,
+            },
+          },
+        ],
       },
     })
     .catch((err) => {
