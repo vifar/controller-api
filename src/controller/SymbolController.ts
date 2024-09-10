@@ -144,11 +144,11 @@ export const insertSymbols = async (req: Request, res: Response) => {
 
   const { userId } = req.body;
 
-  const daySymbols = Object.values(SWING_SYMBOLS)
+  const daySymbols = Object.values(DAY_SYMBOLS)
     .filter((value) => typeof value === "string")
     .map((value) => value);
 
-  const swingSymbols: string[] = Object.values(DAY_SYMBOLS)
+  const swingSymbols: string[] = Object.values(SWING_SYMBOLS)
     .filter((value) => typeof value === "string")
     .map((value) => value);
 
