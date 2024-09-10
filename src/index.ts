@@ -12,7 +12,7 @@ import {
 } from "./controller/SymbolController";
 import { generateKey, login, validate } from "./controller/UserController";
 
-const server = express();
+export const server = express();
 export const prisma = new PrismaClient();
 
 async function main() {

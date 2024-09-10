@@ -10,7 +10,7 @@
     "start": "node-dev src/index.ts",
     "tsc": "tsc",
     "postinstall": "npm run tsc",
-    "dev": "ts-node-dev --respawn --pretty --transpile-only index.ts"
+    "dev": "npx ts-node-dev --respawn --pretty --transpile-only index.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.19.1",
