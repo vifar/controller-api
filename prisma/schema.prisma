@@ -30,8 +30,7 @@ model SymbolStatus {
   user         User      @relation(fields: [userId], references: [userId])
   userId       String
   symbol       String
-  dayMode      String 
-  dayStatus    String
-  swingMode    String
-  swingStatus  String 
+  tradeType    String 
+  status       String
+  mode         String
 }

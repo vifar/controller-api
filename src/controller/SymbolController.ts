@@ -1,6 +1,8 @@
+import { CronJob } from "cron";
 import { Request, Response } from "express";
 import { validationResult } from "express-validator";
 import { prisma } from "..";
+import { DAY_SYMBOLS, SWING_SYMBOLS } from "../enum/symbols";
 import { getListFromEnum } from "../service/symbolService";
 import { getErrorMessage } from "../utils/error";
 
@@ -19,7 +21,11 @@ export const getByUserId = async (req: Request, res: Response) => {
     return res.send({ errors: result.array() });
   }
 
-  const { userId } = req.query;
+  const { userId, type } = req.query;
+
+  if (type === "swing") {
+  } else {
+  }
 
   const statuses = await prisma.symbolStatus
     .findMany({
@@ -92,23 +98,23 @@ export const update = async (req: Request, res: Response) => {
     return res.send({ errors: result.array() });
   }
 
-  const { id, strategy, mode } = req.body;
+  const { id, type, mode } = req.body;
 
-  let swingStatus, dayStatus, swingUpdate, dayUpdate;
+  let status, modeUpdate;
 
-  if (strategy == "day") {
+  if (type == "day") {
     if (mode == "1" || mode == "SELL" || mode == "0" || mode == "BUY") {
-      dayStatus = "1"; // ON
+      status = "1"; // ON
     } else {
-      dayStatus = "0"; // OFF
+      status = "0"; // OFF
     }
 
     if (mode == "1" || mode == "SELL") {
-      dayUpdate = "1"; // SELL
+      modeUpdate = "1"; // SELL
     } else if (mode == "0" || mode == "BUY") {
-      dayUpdate = "0"; // BUY
+      modeUpdate = "0"; // BUY
     } else {
-      dayUpdate = "2"; // CANCEL
+      modeUpdate = "2"; // CANCEL
     }
 
     await prisma.symbolStatus
@@ -117,36 +123,9 @@ export const update = async (req: Request, res: Response) => {
           id: id,
         },
         data: {
-          dayStatus: dayStatus,
-          dayMode: dayUpdate,
-        },
-      })
-      .catch((err) => {
-        res.status(400).send(err);
-      });
-  } else if (strategy == "swing") {
-    if (mode == "1" || mode == "SELL" || mode == "0" || mode == "BUY") {
-      swingStatus = "1";
-    } else {
-      swingStatus = "0";
-    }
-
-    if (mode == "1" || mode == "SELL") {
-      swingUpdate = "1";
-    } else if (mode == "0" || mode == "BUY") {
-      swingUpdate = "0"; // BUY
-    } else {
-      swingUpdate = "2"; // CANCEL
-    }
-
-    await prisma.symbolStatus
-      .update({
-        where: {
-          id: id,
-        },
-        data: {
-          swingStatus: swingStatus,
-          swingMode: swingUpdate,
+          status: status,
+          mode: modeUpdate,
+          tradeType: type,
         },
       })
       .catch((err) => {
@@ -165,18 +144,39 @@ export const insertSymbols = async (req: Request, res: Response) => {
 
   const { userId } = req.body;
 
-  const symbolList = await getListFromEnum();
+  const daySymbols = Object.values(SWING_SYMBOLS)
+    .filter((value) => typeof value === "string")
+    .map((value) => value);
 
-  for (let i = 0; i < symbolList.length; i++) {
+  const swingSymbols: string[] = Object.values(DAY_SYMBOLS)
+    .filter((value) => typeof value === "string")
+    .map((value) => value);
+
+  for (let i = 0; i < daySymbols.length; i++) {
     await prisma.symbolStatus
       .create({
         data: {
           userId: userId,
-          symbol: symbolList[i],
-          swingStatus: "0",
-          swingMode: "0",
-          dayMode: "0",
-          dayStatus: "0",
+          symbol: daySymbols[i],
+          tradeType: "day",
+          mode: "0",
+          status: "0",
+        },
+      })
+      .catch((err) => {
+        res.status(400).send(err);
+      });
+  }
+
+  for (let i = 0; i < swingSymbols.length; i++) {
+    await prisma.symbolStatus
+      .create({
+        data: {
+          userId: userId,
+          symbol: swingSymbols[i],
+          tradeType: "swing",
+          mode: "0",
+          status: "0",
         },
       })
       .catch((err) => {
@@ -186,3 +186,22 @@ export const insertSymbols = async (req: Request, res: Response) => {
 
   return res.status(200).send({ msg: "Insert Successful" });
 };
+
+export const restartModeJob = new CronJob(
+  "0 11 * * 1-5",
+  async function () {
+    await prisma.symbolStatus.updateMany({
+      where: {
+        tradeType: "day",
+      },
+      data: {
+        status: "0",
+        mode: "0",
+        tradeType: "day",
+      },
+    });
+  },
+  null,
+  true,
+  "America/New_York"
+);

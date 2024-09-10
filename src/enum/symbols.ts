@@ -1,4 +1,4 @@
-export enum SYMBOLS {
+export enum DAY_SYMBOLS {
   AUDJPY = "AUDJPY",
   CADJPY = "CADJPY",
   CHFJPY = "CHFJPY",
@@ -14,4 +14,59 @@ export enum SYMBOLS {
   USDCHF = "USDCHF",
 
   XAUUSD = "XAUUSD",
+}
+
+export enum SWING_SYMBOLS {
+  // Forex Symbols
+  EURAUD = "EURAUD",
+  GBPAUD = "GBPAUD",
+
+  AUDCAD = "AUDCAD",
+  EURCAD = "EURCAD",
+  GBPCAD = "GBPCAD",
+  NZDCAD = "NZDCAD",
+
+  AUDCHF = "AUDCHF",
+  CADCHF = "CADCHF",
+  EURCHF = "EURCHF",
+  GBPCHF = "GBPCHF",
+  NZDCHF = "NZDCHF",
+
+  EURGBP = "EURGBP",
+
+  AUDJPY = "AUDJPY",
+  CADJPY = "CADJPY",
+  CHFJPY = "CHFJPY",
+  EURJPY = "EURJPY",
+  GBPJPY = "GBPJPY",
+  JPYBASKET = "JPYBASKET",
+  NZDJPY = "NZDJPY",
+  USDJPY = "USDJPY",
+
+  AUDNZD = "AUDNZD",
+  EURNZD = "EURNZD",
+  GBPNZD = "GBPNZD",
+
+  AUDUSD = "AUDUSD",
+  DXY = "DXY",
+  EURUSD = "EURUSD",
+  GBPUSD = "GBPUSD",
+  NZDUSD = "NZDUSD",
+  USDCAD = "USDCAD",
+  USDCHF = "USDCHF",
+
+  // Equity Indices
+  DE30EUR = "DE30EUR",
+  JPN225 = "JPN225",
+  NAS100USD = "NAS100USD",
+  SPX500USD = "SPX500USD",
+  US30 = "US30",
+
+  // Metals
+  XAGUSD = "XAGUSD",
+  XAUUSD = "XAUUSD",
+  XCUUSD = "XCUUSD",
+
+  // Oil
+  USOIL = "USOIL",
 }

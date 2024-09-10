@@ -1,7 +1,7 @@
-import { SYMBOLS } from "../enum/symbols";
+import { DAY_SYMBOLS } from "../enum/symbols";
 
 export async function getListFromEnum(): Promise<string[]> {
-  const symbolArr: string[] = Object.values(SYMBOLS)
+  const symbolArr: string[] = Object.values(DAY_SYMBOLS)
     .filter((value) => typeof value === "string")
     .map((value) => value);
 
