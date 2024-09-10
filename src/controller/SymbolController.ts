@@ -22,15 +22,14 @@ export const getByUserId = async (req: Request, res: Response) => {
 
   const { userId, type } = req.query;
 
-  if (type === "swing") {
-  } else {
-  }
-
   const statuses = await prisma.symbolStatus
     .findMany({
       where: {
         userId: {
           equals: userId as string,
+        },
+        tradeType: {
+          equals: type as string,
         },
       },
     })
