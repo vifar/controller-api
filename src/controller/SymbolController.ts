@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { validationResult } from "express-validator";
 import { prisma } from "..";
-import { DAY_SYMBOLS, SWING_SYMBOLS } from "../enum/symbols";
+import { DAY_SYMBOLS, SWING_SYMBOLS } from "../enums/symbols";
 import { getListFromEnum } from "../service/symbolService";
 import { getErrorMessage } from "../utils/error";
 
@@ -102,13 +102,13 @@ export const update = async (req: Request, res: Response) => {
 
   const { id, type, mode } = req.body;
 
-  let status, modeUpdate;
+  let statusUpdate, modeUpdate;
 
   if (type == "day") {
     if (mode == "1" || mode == "SELL" || mode == "0" || mode == "BUY") {
-      status = "1"; // ON
+      statusUpdate = "1"; // ON
     } else {
-      status = "0"; // OFF
+      statusUpdate = "0"; // OFF
     }
 
     if (mode == "1" || mode == "SELL") {
@@ -125,7 +125,7 @@ export const update = async (req: Request, res: Response) => {
           id: id,
         },
         data: {
-          status: status,
+          status: statusUpdate,
           mode: modeUpdate,
           tradeType: type,
         },
@@ -161,7 +161,7 @@ export const insertSymbols = async (req: Request, res: Response) => {
           userId: userId,
           symbol: daySymbols[i],
           tradeType: "day",
-          mode: "0",
+          mode: "2",
           status: "0",
         },
       })
