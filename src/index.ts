@@ -2,17 +2,29 @@ import { PrismaClient } from "@prisma/client";
 import cors from "cors";
 import express, { Request } from "express";
 import { body, query } from "express-validator";
+import cron from "node-cron";
 import {
   getByUserId,
   getByUserIdAndSymbol,
   getList,
   insertSymbols,
+  resetSymbols,
   update,
 } from "./controller/SymbolController";
 import { generateKey, login, validate } from "./controller/UserController";
 
 export const server = express();
 export const prisma = new PrismaClient();
+
+cron.schedule("0 12 * * 1-5", () => {
+  console.log("Running task at 11 AM CST, Monday to Friday");
+  resetSymbols();
+});
+
+cron.schedule("0 23 * * 1-5", () => {
+  console.log("Running task at 11 PM (23:00) CST, Monday to Friday");
+  resetSymbols();
+});
 
 async function main() {
   await prisma.$connect();

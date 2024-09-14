@@ -188,3 +188,20 @@ export const insertSymbols = async (req: Request, res: Response) => {
 
   return res.status(200).send({ msg: "Insert Successful" });
 };
+
+export const resetSymbols = async () => {
+  await prisma.symbolStatus
+    .updateMany({
+      where: {
+        tradeType: "day",
+      },
+      data: {
+        mode: "2",
+      },
+    })
+    .catch((err) => {
+      throw new Error("Reset Day Symbols Error: " + err);
+    });
+
+  console.log("Day Symbols Reset Successful");
+};
