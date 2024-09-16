@@ -45,6 +45,7 @@ async function main() {
     query("userId").notEmpty().trim().escape(),
     query("symbol").notEmpty().trim().escape(),
     query("type").notEmpty().trim().escape(),
+    query("key").notEmpty().trim().escape(),
     getByUserIdAndSymbol
   );
 

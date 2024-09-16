@@ -70,9 +70,17 @@ export const getByUserIdAndSymbol = async (req: Request, res: Response) => {
     return res.send({ errors: result.array() });
   }
 
-  const { userId, symbol } = req.query;
+  const { userId, symbol, key } = req.query;
 
-  const statuses = await prisma.symbolStatus
+  const validUser = await prisma.user.findFirst({
+    where: { userId: userId as string, key: key as string },
+  });
+
+  if (!validUser) {
+    return res.status(202).send({ errors: [{ msg: "Invalid User" }] });
+  }
+
+  const symbolStatus = await prisma.symbolStatus
     .findFirst({
       where: {
         userId: {
@@ -87,11 +95,13 @@ export const getByUserIdAndSymbol = async (req: Request, res: Response) => {
       res.status(400).send(err);
     });
 
-  if (!statuses) {
+  if (!symbolStatus) {
     return res.status(202).send({ errors: [{ msg: "Not Found" }] });
   }
 
-  return res.status(200).send({ controller: statuses });
+  delete (symbolStatus as any).status;
+
+  return res.status(200).send({ controller: symbolStatus });
 };
 
 export const update = async (req: Request, res: Response) => {
@@ -105,18 +115,15 @@ export const update = async (req: Request, res: Response) => {
   let statusUpdate, modeUpdate;
 
   if (type == "day") {
-    if (mode == "1" || mode == "SELL" || mode == "0" || mode == "BUY") {
-      statusUpdate = "1"; // ON
-    } else {
-      statusUpdate = "0"; // OFF
-    }
-
     if (mode == "1" || mode == "SELL") {
+      statusUpdate = "1"; // ON
       modeUpdate = "1"; // SELL
     } else if (mode == "0" || mode == "BUY") {
+      statusUpdate = "1"; // ON
       modeUpdate = "0"; // BUY
     } else {
-      modeUpdate = "2"; // CANCEL
+      statusUpdate = "0"; // OFF
+      modeUpdate = "2"; // OFF
     }
 
     await prisma.symbolStatus
