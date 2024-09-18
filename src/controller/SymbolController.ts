@@ -184,7 +184,7 @@ export const insertSymbols = async (req: Request, res: Response) => {
           userId: userId,
           symbol: swingSymbols[i],
           tradeType: "swing",
-          mode: "0",
+          mode: "2",
           status: "0",
         },
       })
