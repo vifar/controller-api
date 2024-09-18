@@ -21,7 +21,7 @@ cron.schedule("0 12 * * 1-5", () => {
   resetSymbols();
 });
 
-cron.schedule("0 23 * * 1-5", () => {
+cron.schedule("0 22 * * 1-5", () => {
   console.log("Running task at 11 PM (23:00) CST, Monday to Friday");
   resetSymbols();
 });
