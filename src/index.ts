@@ -16,15 +16,27 @@ import { generateKey, login, validate } from "./controller/UserController";
 export const server = express();
 export const prisma = new PrismaClient();
 
-cron.schedule("0 12 * * 1-5", () => {
-  console.log("Running task at 11 AM CST, Monday to Friday");
-  resetSymbols();
-});
+const nySessionReset = cron.schedule(
+  "0 11 * * *",
+  () => {
+    console.log("Running task at 11 AM CST, Monday to Friday");
+    resetSymbols();
+  },
+  {
+    timezone: "America/Chicago",
+  }
+);
 
-cron.schedule("0 21 * * 1-5", () => {
-  console.log("Running task at 10 PM (23:00) CST, Monday to Friday");
-  resetSymbols();
-});
+const asiaSessionReset = cron.schedule(
+  "0 22 * * *",
+  () => {
+    console.log("Running task at 10 PM (23:00) CST, Monday to Friday");
+    resetSymbols();
+  },
+  {
+    timezone: "America/Chicago",
+  }
+);
 
 async function main() {
   await prisma.$connect();
@@ -68,6 +80,9 @@ async function main() {
 
   server.listen(process.env.PORT, async () => {
     console.log("Listening on port: " + process.env.PORT);
+
+    nySessionReset.start();
+    asiaSessionReset.start();
   });
 }
 
