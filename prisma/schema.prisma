@@ -33,4 +33,6 @@ model SymbolStatus {
   tradeType    String 
   status       String
   mode         String
+  signalOne    String   @default("2")
+  signalTwo    String   @default("2")
 }

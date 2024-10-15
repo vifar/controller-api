@@ -104,6 +104,46 @@ export const getByUserIdAndSymbol = async (req: Request, res: Response) => {
   return res.status(200).send({ controller: symbolStatus });
 };
 
+export const getByUserIdAndSymbolV2 = async (req: Request, res: Response) => {
+  const result = validationResult(req);
+  if (!result.isEmpty()) {
+    return res.send({ errors: result.array() });
+  }
+
+  const { userId, symbol, key } = req.body;
+
+  const validUser = await prisma.user.findFirst({
+    where: { userId: userId as string, key: key as string },
+  });
+
+  if (!validUser) {
+    return res.status(202).send({ errors: [{ msg: "Invalid User" }] });
+  }
+
+  const symbolStatus = await prisma.symbolStatus
+    .findFirst({
+      where: {
+        userId: {
+          equals: userId as string,
+        },
+        symbol: {
+          equals: symbol as string,
+        },
+      },
+    })
+    .catch((err) => {
+      res.status(400).send(err);
+    });
+
+  if (!symbolStatus) {
+    return res.status(202).send({ errors: [{ msg: "Not Found" }] });
+  }
+
+  delete (symbolStatus as any).status;
+
+  return res.status(200).send({ controller: symbolStatus });
+};
+
 export const update = async (req: Request, res: Response) => {
   const result = validationResult(req);
   if (!result.isEmpty()) {
@@ -115,16 +155,7 @@ export const update = async (req: Request, res: Response) => {
   let statusUpdate, modeUpdate;
 
   if (type == "day") {
-    if (mode == "1" || mode == "SELL") {
-      statusUpdate = "1"; // ON
-      modeUpdate = "1"; // SELL
-    } else if (mode == "0" || mode == "BUY") {
-      statusUpdate = "1"; // ON
-      modeUpdate = "0"; // BUY
-    } else {
-      statusUpdate = "0"; // OFF
-      modeUpdate = "2"; // OFF
-    }
+    const parsedSignal = parseSignal(mode);
 
     await prisma.symbolStatus
       .update({
@@ -132,8 +163,8 @@ export const update = async (req: Request, res: Response) => {
           id: id,
         },
         data: {
-          status: statusUpdate,
-          mode: modeUpdate,
+          status: parsedSignal.statusUpdate,
+          mode: parsedSignal.modeUpdate,
           tradeType: type,
         },
       })
@@ -143,6 +174,24 @@ export const update = async (req: Request, res: Response) => {
   }
 
   return res.status(200).send({ msg: "Update Successful" });
+};
+
+const parseSignal = (mode: string) => {
+  let statusUpdate = "",
+    modeUpdate = "";
+
+  if (mode == "1" || mode == "SELL") {
+    statusUpdate = "1"; // ON
+    modeUpdate = "1"; // SELL
+  } else if (mode == "0" || mode == "BUY") {
+    statusUpdate = "1"; // ON
+    modeUpdate = "0"; // BUY
+  } else {
+    statusUpdate = "0"; // OFF
+    modeUpdate = "2"; // OFF
+  }
+
+  return { statusUpdate, modeUpdate };
 };
 
 export const insertSymbols = async (req: Request, res: Response) => {
@@ -211,4 +260,42 @@ export const resetSymbols = async () => {
     });
 
   console.log("Day Symbols Reset Successful");
+};
+
+export const updateSignal = async (req: Request, res: Response) => {
+  const result = validationResult(req);
+  if (!result.isEmpty()) {
+    return res.send({ errors: result.array() });
+  }
+
+  const { userId, symbol, tradeType, signalOne, signalTwo } = req.body;
+
+  let parsedSignal: any = {};
+  if (signalOne == "1" && signalTwo == "1") {
+    parsedSignal = parseSignal("1");
+  } else if (signalOne == "0" && signalTwo == "0") {
+    parsedSignal = parseSignal("0");
+  } else {
+    parsedSignal = parseSignal("2");
+  }
+
+  await prisma.symbolStatus
+    .updateMany({
+      where: {
+        userId: userId,
+        symbol: symbol,
+        tradeType: tradeType,
+      },
+      data: {
+        signalOne: signalOne,
+        signalTwo: signalTwo,
+        mode: parsedSignal.modeUpdate,
+        status: parsedSignal.statusUpdate,
+      },
+    })
+    .catch((err) => {
+      res.status(400).send(err);
+    });
+
+  return res.status(200).send({ msg: "Update Successful" });
 };

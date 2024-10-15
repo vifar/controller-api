@@ -15,11 +15,11 @@
   },
   "dependencies": {
     "@prisma/client": "^5.19.1",
-    "body-parser": "^1.20.2",
+    "body-parser": "^1.20.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "ejs": "^3.1.5",
-    "express": "^4.19.2",
+    "express": "^4.21.1",
     "express-validator": "^7.0.1",
     "jsonwebtoken": "^9.0.1",
     "mysql": "^2.18.1",
@@ -45,7 +45,7 @@
     "@types/uuid": "^10.0.0",
     "cron": "^3.1.7",
     "got": "^11.3.0",
-    "prisma": "^5.19.1",
+    "prisma": "^5.20.0",
     "tape": "^4.7.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.5.4"

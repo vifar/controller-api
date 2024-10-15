@@ -6,10 +6,12 @@ import cron from "node-cron";
 import {
   getByUserId,
   getByUserIdAndSymbol,
+  getByUserIdAndSymbolV2,
   getList,
   insertSymbols,
   resetSymbols,
   update,
+  updateSignal,
 } from "./controller/SymbolController";
 import { generateKey, login, validate } from "./controller/UserController";
 
@@ -59,6 +61,24 @@ async function main() {
     query("type").notEmpty().trim().escape(),
     query("key").notEmpty().trim().escape(),
     getByUserIdAndSymbol
+  );
+  server.post(
+    "/getByUserIdAndSymbol",
+    body("userId").notEmpty().trim().escape(),
+    body("symbol").notEmpty().trim().escape(),
+    body("type").notEmpty().trim().escape(),
+    body("key").notEmpty().trim().escape(),
+    getByUserIdAndSymbolV2
+  );
+
+  server.post(
+    "/updateSignal",
+    body("userId").notEmpty(),
+    body("symbol").notEmpty(),
+    body("tradeType").notEmpty(),
+    body("signalOne").notEmpty(),
+    body("signalTwo").notEmpty(),
+    updateSignal
   );
 
   server.post("/insert", body("userId").notEmpty().trim(), insertSymbols);
