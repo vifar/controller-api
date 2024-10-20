@@ -108,22 +108,34 @@ export const getByUserIdAndSymbolV2 = async (req: Request, res: Response) => {
   console.log("Body", req.body);
 
   const result = validationResult(req);
+  console.log("Validation Result", result);
   if (!result.isEmpty()) {
+    console.log("Validation failed, sending error response");
     return res.send({ errors: result.array() });
   }
 
   const { userId, symbol, key } = req.body;
+  console.log(
+    "Extracted params: userId =",
+    userId,
+    ", symbol =",
+    symbol,
+    ", key =",
+    key
+  );
 
   const validUser = await prisma.user.findFirst({
     where: { userId: userId as string, key: key as string },
   });
+  console.log("Valid user found:", validUser);
 
   if (!validUser) {
+    console.log("Invalid user, sending error response");
     return res.status(202).send({ errors: [{ msg: "Invalid User" }] });
   }
 
-  const symbolStatus = await prisma.symbolStatus
-    .findFirst({
+  try {
+    const symbolStatus = await prisma.symbolStatus.findFirst({
       where: {
         userId: {
           equals: userId as string,
@@ -132,18 +144,22 @@ export const getByUserIdAndSymbolV2 = async (req: Request, res: Response) => {
           equals: symbol as string,
         },
       },
-    })
-    .catch((err) => {
-      res.status(400).send(err);
     });
+    console.log("Symbol status found:", symbolStatus);
 
-  if (!symbolStatus) {
-    return res.status(202).send({ errors: [{ msg: "Not Found" }] });
+    if (!symbolStatus) {
+      console.log("Symbol status not found, sending error response");
+      return res.status(202).send({ errors: [{ msg: "Not Found" }] });
+    }
+
+    delete (symbolStatus as any).status;
+    console.log("Symbol status after deleting status:", symbolStatus);
+
+    return res.status(200).send({ controller: symbolStatus });
+  } catch (err) {
+    console.error("Error fetching symbol status:", err);
+    return res.status(400).send(err);
   }
-
-  delete (symbolStatus as any).status;
-
-  return res.status(200).send({ controller: symbolStatus });
 };
 
 export const update = async (req: Request, res: Response) => {
