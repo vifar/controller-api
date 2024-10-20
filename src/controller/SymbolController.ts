@@ -127,7 +127,7 @@ export const getByUserIdAndSymbolV2 = async (req: Request, res: Response) => {
   const validUser = await prisma.user.findFirst({
     where: { userId: userId as string, key: key as string },
   });
-  console.log("Valid user found:", validUser);
+  console.log("Valid user found");
 
   if (!validUser) {
     console.log("Invalid user, sending error response");
