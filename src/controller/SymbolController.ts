@@ -105,6 +105,8 @@ export const getByUserIdAndSymbol = async (req: Request, res: Response) => {
 };
 
 export const getByUserIdAndSymbolV2 = async (req: Request, res: Response) => {
+  console.log("Body", req.body);
+
   const result = validationResult(req);
   if (!result.isEmpty()) {
     return res.send({ errors: result.array() });
