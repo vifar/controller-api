@@ -1,303 +1,132 @@
 import { Request, Response } from "express";
 import { validationResult } from "express-validator";
 import { prisma } from "..";
-import { DAY_SYMBOLS, SWING_SYMBOLS } from "../enums/symbols";
 import { getListFromEnum } from "../service/symbolService";
 import { getErrorMessage } from "../utils/error";
 
 export const getList = async (req: Request, res: Response) => {
   try {
+    console.log("Getting list of symbols from enum...");
     const foundUser = await getListFromEnum();
+    console.log("List of symbols:", foundUser);
     res.status(200).send(foundUser);
   } catch (error) {
-    return res.status(500).send(getErrorMessage(error));
+    console.error("Error getting list of symbols:", error);
+    res.status(500).send(getErrorMessage(error));
   }
 };
 
 export const getByUserId = async (req: Request, res: Response) => {
   const result = validationResult(req);
   if (!result.isEmpty()) {
-    return res.send({ errors: result.array() });
+    console.log("Validation errors:", result.array());
+    res.send({ errors: result.array() });
   }
 
   const { userId, type } = req.query;
+  console.log("User ID:", userId, "Type:", type);
 
-  const statuses = await prisma.symbolStatus
-    .findMany({
-      where: {
-        AND: [
-          {
-            userId: {
-              equals: userId as string,
+  try {
+    console.log("Getting symbol status by user ID and type...");
+    const statuses = await prisma.symbolStatus
+      .findMany({
+        where: {
+          AND: [
+            {
+              userId: {
+                equals: userId as string,
+              },
+              tradeType: {
+                equals: type as string,
+              },
             },
-            tradeType: {
-              equals: type as string,
-            },
-          },
-        ],
-      },
-    })
-    .catch((err) => {
-      res.status(400).send(err);
-    });
+          ],
+        },
+      })
+      .catch((err) => {
+        console.error("Error getting symbol status:", err);
+        res.status(400).send(err);
+      });
 
-  if (!statuses) {
-    return res.status(202).send({ errors: [{ msg: "Not Found" }] });
-  }
-  if (statuses.length == 0) {
-    return res.status(202).send({ errors: [{ msg: "No Records Found" }] });
-  }
+    console.log("Symbol status:", statuses);
+    if (!statuses) {
+      console.log("Symbol status not found");
+      res.status(202).send({ errors: [{ msg: "Not Found" }] });
+    } else if (statuses.length == 0) {
+      console.log("No records found");
+      res.status(202).send({ errors: [{ msg: "No Records Found" }] });
+    } else {
+      console.log("Sorting symbol status by symbol...");
+      statuses.sort((a, b) => {
+        let fa = a.symbol.toLowerCase(),
+          fb = b.symbol.toLowerCase();
 
-  statuses.sort((a, b) => {
-    let fa = a.symbol.toLowerCase(),
-      fb = b.symbol.toLowerCase();
+        if (fa < fb) {
+          return -1;
+        }
+        if (fa > fb) {
+          return 1;
+        }
+        return 0;
+      });
 
-    if (fa < fb) {
-      return -1;
+      console.log("Sorted symbol status:", statuses);
+      res.status(200).send({ controller: statuses });
     }
-    if (fa > fb) {
-      return 1;
-    }
-    return 0;
-  });
-
-  return res.status(200).send({ controller: statuses });
+  } catch (error) {
+    console.error("Error getting symbol status:", error);
+    res.status(500).send(getErrorMessage(error));
+  }
 };
 
 export const getByUserIdAndSymbol = async (req: Request, res: Response) => {
   const result = validationResult(req);
   if (!result.isEmpty()) {
-    return res.send({ errors: result.array() });
+    console.log("Validation errors:", result.array());
+    res.send({ errors: result.array() });
   }
 
   const { userId, symbol, key } = req.query;
+  console.log("User ID:", userId, "Symbol:", symbol, "Key:", key);
 
-  const validUser = await prisma.user.findFirst({
-    where: { userId: userId as string, key: key as string },
-  });
-
-  if (!validUser) {
-    return res.status(202).send({ errors: [{ msg: "Invalid User" }] });
-  }
-
-  const symbolStatus = await prisma.symbolStatus
-    .findFirst({
-      where: {
-        userId: {
-          equals: userId as string,
-        },
-        symbol: {
-          equals: symbol as string,
-        },
-      },
-    })
-    .catch((err) => {
-      res.status(400).send(err);
+  try {
+    console.log("Getting user by user ID and key...");
+    const validUser = await prisma.user.findFirst({
+      where: { userId: userId as string, key: key as string },
     });
 
-  if (!symbolStatus) {
-    return res.status(202).send({ errors: [{ msg: "Not Found" }] });
+    if (!validUser) {
+      console.log("Invalid user");
+      res.status(202).send({ errors: [{ msg: "Invalid User" }] });
+    } else {
+      console.log("Getting symbol status by user ID and symbol...");
+      const symbolStatus = await prisma.symbolStatus
+        .findFirst({
+          where: {
+            userId: {
+              equals: userId as string,
+            },
+            symbol: {
+              equals: symbol as string,
+            },
+          },
+        })
+        .catch((err) => {
+          console.error("Error getting symbol status:", err);
+          res.status(400).send(err);
+        });
+
+      console.log("Symbol status:", symbolStatus);
+      if (!symbolStatus) {
+        console.log("Symbol status not found");
+        res.status(202).send({ errors: [{ msg: "Not Found" }] });
+      } else {
+        console.log("Symbol status found");
+        res.status(200).send({ controller: symbolStatus });
+      }
+    }
+  } catch (error) {
+    console.error("Error getting symbol status:", error);
+    res.status(500).send(getErrorMessage(error));
   }
-
-  delete (symbolStatus as any).status;
-
-  return res.status(200).send({ controller: symbolStatus });
-};
-
-export const getByUserIdAndSymbolV2 = async (req: Request, res: Response) => {
-  console.log("Body", req.body);
-
-  const result = validationResult(req);
-  if (!result.isEmpty()) {
-    return res.send({ errors: result.array() });
-  }
-
-  const { userId, symbol, key } = req.body;
-
-  const validUser = await prisma.user.findFirst({
-    where: { userId: userId as string, key: key as string },
-  });
-
-  if (!validUser) {
-    return res.status(202).send({ errors: [{ msg: "Invalid User" }] });
-  }
-
-  const symbolStatus = await prisma.symbolStatus
-    .findFirst({
-      where: {
-        userId: {
-          equals: userId as string,
-        },
-        symbol: {
-          equals: symbol as string,
-        },
-      },
-    })
-    .catch((err) => {
-      res.status(400).send(err);
-    });
-
-  if (!symbolStatus) {
-    return res.status(202).send({ errors: [{ msg: "Not Found" }] });
-  }
-
-  delete (symbolStatus as any).status;
-
-  return res.status(200).send({ controller: symbolStatus });
-};
-
-export const update = async (req: Request, res: Response) => {
-  const result = validationResult(req);
-  if (!result.isEmpty()) {
-    return res.send({ errors: result.array() });
-  }
-
-  const { id, type, mode } = req.body;
-
-  let statusUpdate, modeUpdate;
-
-  if (type == "day") {
-    const parsedSignal = parseSignal(mode);
-
-    await prisma.symbolStatus
-      .update({
-        where: {
-          id: id,
-        },
-        data: {
-          status: parsedSignal.statusUpdate,
-          mode: parsedSignal.modeUpdate,
-          tradeType: type,
-        },
-      })
-      .catch((err) => {
-        res.status(400).send(err);
-      });
-  }
-
-  return res.status(200).send({ msg: "Update Successful" });
-};
-
-const parseSignal = (mode: string) => {
-  let statusUpdate = "",
-    modeUpdate = "";
-
-  if (mode == "1" || mode == "SELL") {
-    statusUpdate = "1"; // ON
-    modeUpdate = "1"; // SELL
-  } else if (mode == "0" || mode == "BUY") {
-    statusUpdate = "1"; // ON
-    modeUpdate = "0"; // BUY
-  } else {
-    statusUpdate = "0"; // OFF
-    modeUpdate = "2"; // OFF
-  }
-
-  return { statusUpdate, modeUpdate };
-};
-
-export const insertSymbols = async (req: Request, res: Response) => {
-  const result = validationResult(req);
-  if (!result.isEmpty()) {
-    return res.send({ errors: result.array() });
-  }
-
-  const { userId } = req.body;
-
-  const daySymbols = Object.values(DAY_SYMBOLS)
-    .filter((value) => typeof value === "string")
-    .map((value) => value);
-
-  const swingSymbols: string[] = Object.values(SWING_SYMBOLS)
-    .filter((value) => typeof value === "string")
-    .map((value) => value);
-
-  for (let i = 0; i < daySymbols.length; i++) {
-    await prisma.symbolStatus
-      .create({
-        data: {
-          userId: userId,
-          symbol: daySymbols[i],
-          tradeType: "day",
-          mode: "2",
-          status: "0",
-        },
-      })
-      .catch((err) => {
-        res.status(400).send(err);
-      });
-  }
-
-  for (let i = 0; i < swingSymbols.length; i++) {
-    await prisma.symbolStatus
-      .create({
-        data: {
-          userId: userId,
-          symbol: swingSymbols[i],
-          tradeType: "swing",
-          mode: "2",
-          status: "0",
-        },
-      })
-      .catch((err) => {
-        res.status(400).send(err);
-      });
-  }
-
-  return res.status(200).send({ msg: "Insert Successful" });
-};
-
-export const resetSymbols = async () => {
-  await prisma.symbolStatus
-    .updateMany({
-      where: {
-        tradeType: "day",
-      },
-      data: {
-        mode: "2",
-      },
-    })
-    .catch((err) => {
-      throw new Error("Reset Day Symbols Error: " + err);
-    });
-
-  console.log("Day Symbols Reset Successful");
-};
-
-export const updateSignal = async (req: Request, res: Response) => {
-  const result = validationResult(req);
-  if (!result.isEmpty()) {
-    return res.send({ errors: result.array() });
-  }
-
-  const { userId, symbol, tradeType, signalOne, signalTwo } = req.body;
-
-  let parsedSignal: any = {};
-  if (signalOne == "1" && signalTwo == "1") {
-    parsedSignal = parseSignal("1");
-  } else if (signalOne == "0" && signalTwo == "0") {
-    parsedSignal = parseSignal("0");
-  } else {
-    parsedSignal = parseSignal("2");
-  }
-
-  await prisma.symbolStatus
-    .updateMany({
-      where: {
-        userId: userId,
-        symbol: symbol,
-        tradeType: tradeType,
-      },
-      data: {
-        signalOne: signalOne,
-        signalTwo: signalTwo,
-        mode: parsedSignal.modeUpdate,
-        status: parsedSignal.statusUpdate,
-      },
-    })
-    .catch((err) => {
-      res.status(400).send(err);
-    });
-
-  return res.status(200).send({ msg: "Update Successful" });
 };
