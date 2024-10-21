@@ -37,7 +37,7 @@ export const getByUserId = async (req: Request, res: Response) => {
         ],
       },
     })
-    .catch((err) => {
+    .catch((err: Error) => {
       res.status(400).send(err);
     });
 
@@ -48,7 +48,7 @@ export const getByUserId = async (req: Request, res: Response) => {
     return res.status(202).send({ errors: [{ msg: "No Records Found" }] });
   }
 
-  statuses.sort((a, b) => {
+  statuses.sort((a: { symbol: string; }, b: { symbol: string; }) => {
     let fa = a.symbol.toLowerCase(),
       fb = b.symbol.toLowerCase();
 
@@ -91,7 +91,7 @@ export const getByUserIdAndSymbol = async (req: Request, res: Response) => {
         },
       },
     })
-    .catch((err) => {
+    .catch((err: Error) => {
       res.status(400).send(err);
     });
 
@@ -145,7 +145,7 @@ export const getByUserIdAndSymbolV2 = async (req: Request, res: Response) => {
         symbol: {
           equals: symbol as string,
         },
-        type: {
+        tradeType: {
           equals: type as string,
         },
       },
@@ -188,7 +188,7 @@ export const update = async (req: Request, res: Response) => {
           tradeType: type,
         },
       })
-      .catch((err) => {
+      .catch((err: Error) => {
         res.status(400).send(err);
       });
   }
@@ -241,7 +241,7 @@ export const insertSymbols = async (req: Request, res: Response) => {
           status: "0",
         },
       })
-      .catch((err) => {
+      .catch((err: Error) => {
         res.status(400).send(err);
       });
   }
@@ -257,7 +257,7 @@ export const insertSymbols = async (req: Request, res: Response) => {
           status: "0",
         },
       })
-      .catch((err) => {
+      .catch((err: Error) => {
         res.status(400).send(err);
       });
   }
@@ -275,7 +275,7 @@ export const resetSymbols = async () => {
         mode: "2",
       },
     })
-    .catch((err) => {
+    .catch((err: Error) => {
       throw new Error("Reset Day Symbols Error: " + err);
     });
 
@@ -283,12 +283,16 @@ export const resetSymbols = async () => {
 };
 
 export const updateSignal = async (req: Request, res: Response) => {
+  console.log('Received request to update signal');
+
   const result = validationResult(req);
   if (!result.isEmpty()) {
+    console.log('Validation errors:', result.array());
     return res.send({ errors: result.array() });
   }
 
   const { userId, symbol, tradeType, signalOne, signalTwo } = req.body;
+  console.log('Request body:', { userId, symbol, tradeType, signalOne, signalTwo });
 
   let parsedSignal: any = {};
   if (signalOne == "1" && signalTwo == "1") {
@@ -298,24 +302,30 @@ export const updateSignal = async (req: Request, res: Response) => {
   } else {
     parsedSignal = parseSignal("2");
   }
+  console.log('Parsed signal:', parsedSignal);
 
-  await prisma.symbolStatus
-    .updateMany({
-      where: {
-        userId: userId,
-        symbol: symbol,
-        tradeType: tradeType,
-      },
-      data: {
-        signalOne: signalOne,
-        signalTwo: signalTwo,
-        mode: parsedSignal.modeUpdate,
-        status: parsedSignal.statusUpdate,
-      },
-    })
-    .catch((err) => {
-      res.status(400).send(err);
-    });
+  try {
+    await prisma.symbolStatus
+      .updateMany({
+        where: {
+          userId: userId,
+          symbol: symbol,
+          tradeType: tradeType,
+        },
+        data: {
+          signalOne: signalOne,
+          signalTwo: signalTwo,
+          mode: parsedSignal.modeUpdate,
+          status: parsedSignal.statusUpdate,
+        },
+      });
+    console.log('Updated symbol status successfully');
+  } catch (err) {
+    console.error('Error updating symbol status:', err);
+    return res.status(400).send(err);
+  }
 
+  console.log('Sending response...');
   return res.status(200).send({ msg: "Update Successful" });
 };
+
