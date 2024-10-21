@@ -5,7 +5,6 @@ import { body, query } from "express-validator";
 import cron from "node-cron";
 import {
   getByUserId,
-  getByUserIdAndSymbol,
   getByUserIdAndSymbolV2,
   getList,
   insertSymbols,
@@ -54,14 +53,14 @@ async function main() {
     query("type").notEmpty().trim().escape(),
     getByUserId
   );
-  server.get(
-    "/getByUserIdAndSymbol",
-    query("userId").notEmpty().trim().escape(),
-    query("symbol").notEmpty().trim().escape(),
-    query("type").notEmpty().trim().escape(),
-    query("key").notEmpty().trim().escape(),
-    getByUserIdAndSymbol
-  );
+  // server.get(
+  //   "/getByUserIdAndSymbol",
+  //   query("userId").notEmpty().trim().escape(),
+  //   query("symbol").notEmpty().trim().escape(),
+  //   query("type").notEmpty().trim().escape(),
+  //   query("key").notEmpty().trim().escape(),
+  //   getByUserIdAndSymbol
+  // );
   server.post(
     "/getByUserIdAndSymbol",
     body("userId").notEmpty().trim().escape(),
