@@ -114,14 +114,16 @@ export const getByUserIdAndSymbolV2 = async (req: Request, res: Response) => {
     return res.send({ errors: result.array() });
   }
 
-  const { userId, symbol, key } = req.body;
+  const { userId, symbol, key, type } = req.body;
   console.log(
     "Extracted params: userId =",
     userId,
     ", symbol =",
     symbol,
     ", key =",
-    key
+    key,
+    ", type =",
+    type
   );
 
   const validUser = await prisma.user.findFirst({
@@ -143,6 +145,9 @@ export const getByUserIdAndSymbolV2 = async (req: Request, res: Response) => {
         symbol: {
           equals: symbol as string,
         },
+        type: {
+          equals: type as string,
+        },
       },
     });
     console.log("Symbol status found:", symbolStatus);
@@ -151,9 +156,6 @@ export const getByUserIdAndSymbolV2 = async (req: Request, res: Response) => {
       console.log("Symbol status not found, sending error response");
       return res.status(202).send({ errors: [{ msg: "Not Found" }] });
     }
-
-    delete (symbolStatus as any).status;
-    console.log("Symbol status after deleting status:", symbolStatus);
 
     return res.status(200).send({ controller: symbolStatus });
   } catch (err) {
