@@ -48,7 +48,7 @@ export const getByUserId = async (req: Request, res: Response) => {
     return res.status(202).send({ errors: [{ msg: "No Records Found" }] });
   }
 
-  statuses.sort((a: { symbol: string; }, b: { symbol: string; }) => {
+  statuses.sort((a: { symbol: string }, b: { symbol: string }) => {
     let fa = a.symbol.toLowerCase(),
       fb = b.symbol.toLowerCase();
 
@@ -283,16 +283,22 @@ export const resetSymbols = async () => {
 };
 
 export const updateSignal = async (req: Request, res: Response) => {
-  console.log('Received request to update signal');
+  console.log("Received request to update signal");
 
   const result = validationResult(req);
   if (!result.isEmpty()) {
-    console.log('Validation errors:', result.array());
+    console.log("Validation errors:", result.array());
     return res.send({ errors: result.array() });
   }
 
   const { userId, symbol, tradeType, signalOne, signalTwo } = req.body;
-  console.log('Request body:', { userId, symbol, tradeType, signalOne, signalTwo });
+  console.log("Request body:", {
+    userId,
+    symbol,
+    tradeType,
+    signalOne,
+    signalTwo,
+  });
 
   let parsedSignal: any = {};
   if (signalOne == "1" && signalTwo == "1") {
@@ -302,30 +308,33 @@ export const updateSignal = async (req: Request, res: Response) => {
   } else {
     parsedSignal = parseSignal("2");
   }
-  console.log('Parsed signal:', parsedSignal);
+  console.log("Parsed signal:", parsedSignal);
 
   try {
-    await prisma.symbolStatus
-      .updateMany({
-        where: {
-          userId: userId,
-          symbol: symbol,
-          tradeType: tradeType,
-        },
-        data: {
-          signalOne: signalOne,
-          signalTwo: signalTwo,
-          mode: parsedSignal.modeUpdate,
-          status: parsedSignal.statusUpdate,
-        },
-      });
-    console.log('Updated symbol status successfully');
+    await prisma.symbolStatus.updateMany({
+      where: {
+        userId: userId,
+        symbol: symbol,
+        tradeType: tradeType,
+      },
+      data: {
+        signalOne: signalOne,
+        signalTwo: signalTwo,
+        mode: parsedSignal.modeUpdate,
+        status: parsedSignal.statusUpdate,
+      },
+    });
+    console.log("Updated symbol status successfully", {
+      signalOne: signalOne,
+      signalTwo: signalTwo,
+      mode: parsedSignal.modeUpdate,
+      status: parsedSignal.statusUpdate,
+    });
   } catch (err) {
-    console.error('Error updating symbol status:', err);
+    console.error("Error updating symbol status:", err);
     return res.status(400).send(err);
   }
 
-  console.log('Sending response...');
+  console.log("Sending response...");
   return res.status(200).send({ msg: "Update Successful" });
 };
-
