@@ -100,8 +100,8 @@ async function main() {
   server.listen(process.env.PORT, async () => {
     console.log("Listening on port: " + process.env.PORT);
 
-    nySessionReset.start();
-    asiaSessionReset.start();
+    // nySessionReset.start();
+    // asiaSessionReset.start();
   });
 }
 
