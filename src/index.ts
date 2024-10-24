@@ -2,7 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import cors from "cors";
 import express, { Request } from "express";
 import { body, query } from "express-validator";
-import cron from "node-cron";
+// import cron from "node-cron";
 import {
   getByUserId,
   getByUserIdAndSymbolV2,
@@ -17,27 +17,27 @@ import { generateKey, login, validate } from "./controller/UserController";
 export const server = express();
 export const prisma = new PrismaClient();
 
-const nySessionReset = cron.schedule(
-  "0 11 * * *",
-  () => {
-    console.log("Running task at 11 AM CST, Monday to Friday");
-    resetSymbols();
-  },
-  {
-    timezone: "America/Chicago",
-  }
-);
+// const nySessionReset = cron.schedule(
+//   "0 11 * * *",
+//   () => {
+//     console.log("Running task at 11 AM CST, Monday to Fr iday");
+//     resetSymbols();
+//   },
+//   {
+//     timezone: "America/Chicago",
+//   }
+// );
 
-const asiaSessionReset = cron.schedule(
-  "0 22 * * *",
-  () => {
-    console.log("Running task at 10 PM (23:00) CST, Monday to Friday");
-    resetSymbols();
-  },
-  {
-    timezone: "America/Chicago",
-  }
-);
+// const asiaSessionReset = cron.schedule(
+//   "0 22 * * *",
+//   () => {
+//     console.log("Running task at 10 PM (23:00) CST, Monday to Friday");
+//     resetSymbols();
+//   },
+//   {
+//     timezone: "America/Chicago",
+//   }
+// );
 
 async function main() {
   await prisma.$connect();
